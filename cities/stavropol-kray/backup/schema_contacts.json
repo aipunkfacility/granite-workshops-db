@@ -1,0 +1,23 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": { "type": "string", "description": "Уникальный ID (CMP0001, CMP0002...)" },
+      "name": { "type": "string", "description": "Название организации" },
+      "city": { "type": "string", "description": "Город" },
+      "address": { "type": "string", "description": "Адрес" },
+      "phones": { "type": "string", "description": "Телефоны через запятую" },
+      "website": { "type": "string", "description": "Сайт" },
+      "vk": { "type": "string", "description": "VK" },
+      "ok": { "type": "string", "description": "OK" },
+      "instagram": { "type": "string", "description": "Instagram" },
+      "telegram": { "type": "string", "description": "Telegram (t.me/...)" },
+      "email": { "type": "string", "description": "Email" },
+      "whatsapp": { "type": "string", "description": "WhatsApp (wa.me/...)" },
+      "notes": { "type": "string", "description": "Заметки, филиалы, бренды" },
+      "aggregators": { "type": "string", "description": "Ссылки на агрегаторы (JSprav, 2GIS, Яндекс.Карты)" }
+    },
+    "required": ["id", "name", "city"]
+  }
+}

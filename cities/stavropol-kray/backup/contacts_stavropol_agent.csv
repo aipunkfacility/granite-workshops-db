@@ -1,0 +1,514 @@
+Job ID: 019d1132-11e1-77a2-ab77-39e5569caa3f
+Status: completed
+Credits Used: 0
+Expires: Mar 22, 2026, 11:27 PM
+
+Result:
+[
+  {
+    "id": "CMP0001",
+    "name": "Небо",
+    "city": "Ставрополь",
+    "address": "просп. Кулакова, 11/1",
+    "phones": "+7 (909) 753-50-50, +7 (8652) 23-87-26",
+    "website": "nebo-odno.ru",
+    "vk": "https://vk.com/nebo_stavropol",
+    "telegram": "https://t.me/neboodnosalebot",
+    "email": "op.nebo1@gmail.com, info@nebo-odno.ru",
+    "whatsapp": "https://wa.me/79672117721",
+    "notes": "Филиалы: Коломийцева 35А, 45 Параллель 5/2, Тельмана 241, Рогожникова 17",
+    "aggregators": "2GIS, Яндекс.Карты"
+  },
+  {
+    "id": "CMP0002",
+    "name": "Монумент",
+    "city": "Ставрополь",
+    "address": "ул. Коломийцева, 35",
+    "phones": "+7 (961) 441-91-33, 8-800-700-70-61, +7 (962) 454-40-51",
+    "website": "monument-26.ru",
+    "vk": "https://vk.com/monument.stav",
+    "telegram": "https://t.me/+79624544051",
+    "email": "monument26@yandex.ru, aftoalex@mail.ru",
+    "whatsapp": "https://wa.me/79624544051",
+    "notes": "Филиалы: Доваторцев 75а к.4, Тельмана 241, Новейшее кладбище, Коломийцева 36",
+    "aggregators": "2GIS, Яндекс.Карты"
+  },
+  {
+    "id": "CMP0003",
+    "name": "ОБРЯД",
+    "city": "Ставрополь",
+    "address": "Краснофлотская ул., 177А",
+    "phones": "+7 (8652) 60-96-69",
+    "website": "obryad26.ru",
+    "email": "obryad26@yandex.ru",
+    "aggregators": "2GIS, Яндекс.Карты"
+  },
+  {
+    "id": "CMP0004",
+    "name": "Вечность",
+    "city": "Ставрополь",
+    "address": "Шпаковская ул., 107д",
+    "phones": "+7 (8652) 30-26-62, +7 (8652) 59-96-96, +7 (8652) 30-27-33",
+    "website": "vechnost26.com",
+    "vk": "https://vk.com/pamyatniki_stavropol",
+    "telegram": "http://t.me/pamyatniki26",
+    "email": "vechnost26stav@mail.ru",
+    "whatsapp": "https://wa.me/78652599696",
+    "notes": "Также филиал: Индустриальная ул., 31",
+    "aggregators": "2GIS, Яндекс.Карты"
+  },
+  {
+    "id": "CMP0005",
+    "name": "СтавРитуал",
+    "city": "Ставрополь",
+    "address": "Игнатьевское кладбище, здание №2",
+    "phones": "+7 (8652) 62-39-39, +7 (918) 888-33-33",
+    "website": "stawritual.ru",
+    "telegram": "https://t.me/79188883333",
+    "whatsapp": "https://wa.me/79188883333",
+    "aggregators": "2GIS, Яндекс.Карты"
+  },
+  {
+    "id": "CMP0006",
+    "name": "Ангел",
+    "city": "Ставрополь",
+    "address": "ул. Калина Красная-8, 141",
+    "phones": "+7 (962) 400-70-22, +7 (962) 445-35-55",
+    "aggregators": "2GIS, Яндекс.Карты"
+  },
+  {
+    "id": "CMP0007",
+    "name": "Мир Гранита26",
+    "city": "Ставрополь",
+    "address": "СДТ Калина Красная, 157",
+    "phones": "+7 (962) 442-08-88",
+    "aggregators": "2GIS, JSprav"
+  },
+  {
+    "id": "CMP0008",
+    "name": "Память в Камне",
+    "city": "Ставрополь",
+    "address": "ул. Серова, 6А",
+    "phones": "+7 (8652) 92-54-20, +7 (963) 126-01-26",
+    "website": "mstone26.ru",
+    "notes": "Также филиал: просп. Кулакова, 79",
+    "aggregators": "JSprav, Яндекс.Карты"
+  },
+  {
+    "id": "CMP0009",
+    "name": "Мастерская Люлин В. В.",
+    "city": "Ставрополь",
+    "address": "ул. Космонавтов, 24",
+    "phones": "+7 (8652) 92-80-80",
+    "website": "ritual-masterskaya.all.biz",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0010",
+    "name": "Ритуал",
+    "city": "Ставрополь",
+    "address": "ул. Калина Красная-6, 118А",
+    "aggregators": "JSprav, Яндекс.Карты"
+  },
+  {
+    "id": "CMP0011",
+    "name": "Обелиск",
+    "city": "Ставрополь",
+    "address": "ул. 8 Марта, 133",
+    "aggregators": "JSprav, 2GIS"
+  },
+  {
+    "id": "CMP0012",
+    "name": "Ритуал сервис",
+    "city": "Ставрополь",
+    "address": "ул. 8 Марта, 68",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0013",
+    "name": "Салон памятники",
+    "city": "Ставрополь",
+    "address": "Октябрьская ул., 202",
+    "aggregators": "JSprav, Яндекс.Карты"
+  },
+  {
+    "id": "CMP0014",
+    "name": "Успение",
+    "city": "Ставрополь",
+    "address": "Октябрьская ул., 123",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0015",
+    "name": "Мемориал",
+    "city": "Ставрополь",
+    "address": "Фестивальный пр., 10А, мкр. № 28",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0016",
+    "name": "Православное похоронное бюро",
+    "city": "Ставрополь",
+    "address": "ул. Голенева, 67в",
+    "notes": "При Крестовоздвиженском храме",
+    "aggregators": "JSprav, 2GIS"
+  },
+  {
+    "id": "CMP0017",
+    "name": "Мавзолей",
+    "city": "Ставрополь",
+    "address": "пер. Буйнакского, 2/3",
+    "aggregators": "JSprav, 2GIS"
+  },
+  {
+    "id": "CMP0018",
+    "name": "Ритуальные услуги",
+    "city": "Ставрополь",
+    "address": "ул. Тельмана, 230а",
+    "notes": "2 филиала",
+    "aggregators": "JSprav, 2GIS"
+  },
+  {
+    "id": "CMP0019",
+    "name": "Ритуальная Служба",
+    "city": "Ставрополь",
+    "address": "ул. Доваторцев, 44Б",
+    "aggregators": "JSprav, Яндекс.Карты"
+  },
+  {
+    "id": "CMP0020",
+    "name": "Ритуал 2.0",
+    "city": "Пятигорск",
+    "address": "Ессентукская ул., 28Д, стр. 1",
+    "phones": "+7 (961) 481-99-99",
+    "email": "ritual-service-kmv@yandex.ru",
+    "aggregators": "2GIS"
+  },
+  {
+    "id": "CMP0021",
+    "name": "Ритуал КМВ",
+    "city": "Пятигорск",
+    "address": "Ессентукская ул., 28Д, стр. 1",
+    "phones": "+7 (961) 481-99-99, +7 (988) 679-52-60",
+    "website": "ritualkmv.ru",
+    "email": "ritual-service-kmv@yandex.ru",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0022",
+    "name": "Данила-Мастер",
+    "city": "Пятигорск",
+    "phones": "+7 (902) 220-20-52, 8 (800) 100-13-39",
+    "website": "danila-master.ru",
+    "telegram": "https://t.me/+79022202052",
+    "notes": "Гранитная мастерская",
+    "aggregators": "2GIS, Яндекс.Карты"
+  },
+  {
+    "id": "CMP0023",
+    "name": "Пятигорский комбинат спецобслуживания",
+    "city": "Пятигорск",
+    "address": "ул. Украинская, 60",
+    "phones": "+7 (8793) 39-69-78, +7 (928) 350-59-48",
+    "notes": "Филиалы: Ессентукская 29, просп. Калинина 2к2, Лермонтовский разъезд 7Б/2",
+    "aggregators": "2GIS, JSprav"
+  },
+  {
+    "id": "CMP0024",
+    "name": "Кавказская мемориальная компания",
+    "city": "Пятигорск",
+    "address": "ул. Акопянца, 11",
+    "notes": "Также филиал: Университетская ул., 1А",
+    "aggregators": "2GIS, JSprav"
+  },
+  {
+    "id": "CMP0025",
+    "name": "Небесный ангел",
+    "city": "Пятигорск",
+    "address": "просп. Калинина, 117а",
+    "aggregators": "2GIS, JSprav"
+  },
+  {
+    "id": "CMP0026",
+    "name": "Память",
+    "city": "Пятигорск",
+    "address": "ул. Пирогова, 17",
+    "aggregators": "2GIS, JSprav, Яндекс.Карты"
+  },
+  {
+    "id": "CMP0027",
+    "name": "ПроМонумент",
+    "city": "Пятигорск",
+    "address": "Ессентукская ул., 29",
+    "aggregators": "JSprav, 2GIS"
+  },
+  {
+    "id": "CMP0028",
+    "name": "РСБ",
+    "city": "Пятигорск",
+    "address": "Суворовский пр., 1",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0029",
+    "name": "ЮгГранит",
+    "city": "Пятигорск",
+    "address": "Ставропольская ул., 70",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0030",
+    "name": "ЮгМрамор",
+    "city": "Пятигорск",
+    "notes": "Мастерская по изготовлению памятников",
+    "aggregators": "2GIS"
+  },
+  {
+    "id": "CMP0031",
+    "name": "Небо",
+    "city": "Пятигорск",
+    "address": "Ессентукская ул., 62",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0032",
+    "name": "Стелла",
+    "city": "Пятигорск",
+    "address": "ул. Ермолова, 22",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0033",
+    "name": "Карат",
+    "city": "Кисловодск",
+    "address": "Седлогорская ул., 144",
+    "phones": "+7 (962) 007-09-90, +7 (928) 812-77-44",
+    "website": "ritual-karat.ru",
+    "vk": "https://vk.com/ritualkarat",
+    "ok": "https://ok.ru/k.ritualnayasluzhba",
+    "telegram": "https://t.me/ritualkarat",
+    "whatsapp": "https://wa.me/+79620070990",
+    "aggregators": "2GIS, Яндекс.Карты, JSprav"
+  },
+  {
+    "id": "CMP0034",
+    "name": "Ангел",
+    "city": "Кисловодск",
+    "address": "Седлогорская ул., 155а",
+    "aggregators": "2GIS, JSprav"
+  },
+  {
+    "id": "CMP0035",
+    "name": "Комбинат спецобслуживания",
+    "city": "Кисловодск",
+    "address": "ул. Фоменко, 135г",
+    "phones": "+7 (87937) 5-92-92, +7 (928) 370-70-27",
+    "aggregators": "2GIS, JSprav"
+  },
+  {
+    "id": "CMP0036",
+    "name": "Память",
+    "city": "Кисловодск",
+    "address": "ул. Фоменко, 135Ж, стр. 1",
+    "aggregators": "2GIS, JSprav"
+  },
+  {
+    "id": "CMP0037",
+    "name": "Последний путь",
+    "city": "Кисловодск",
+    "address": "Азербайджанская ул., 68А",
+    "aggregators": "2GIS, JSprav"
+  },
+  {
+    "id": "CMP0038",
+    "name": "Обелиск",
+    "city": "Кисловодск",
+    "address": "Красивая ул., 6",
+    "aggregators": "2GIS, JSprav"
+  },
+  {
+    "id": "CMP0039",
+    "name": "Стикс",
+    "city": "Кисловодск",
+    "address": "Седлогорская ул., 155",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0040",
+    "name": "Похоронный дом",
+    "city": "Кисловодск",
+    "address": "ул. Фоменко, 134",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0041",
+    "name": "Ритуальные услуги ИП Липиева Т. В.",
+    "city": "Кисловодск",
+    "address": "ул. Фоменко, 134",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0042",
+    "name": "Империя камней",
+    "city": "Кисловодск",
+    "address": "Седлогорская ул., 144, стр. 2",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0043",
+    "name": "Салон надгробий и памятников",
+    "city": "Кисловодск",
+    "address": "Красивая ул., 6",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0044",
+    "name": "Сострадание",
+    "city": "Кисловодск",
+    "address": "ул. Фоменко, 135Ж",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0045",
+    "name": "Салон ритуальных услуг",
+    "city": "Ессентуки",
+    "address": "Пятигорская ул., 188",
+    "aggregators": "JSprav, 2GIS"
+  },
+  {
+    "id": "CMP0046",
+    "name": "Акрополь",
+    "city": "Ессентуки",
+    "address": "Боргустанское шоссе, 9",
+    "notes": "Мастерская памятников",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0047",
+    "name": "Мемориал Сервис 26",
+    "city": "Ессентуки",
+    "address": "Кисловодская ул., 119",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0048",
+    "name": "Ритуал КМВ",
+    "city": "Ессентуки",
+    "address": "Октябрьская ул., 54",
+    "aggregators": "JSprav, 2GIS"
+  },
+  {
+    "id": "CMP0049",
+    "name": "Ритуал",
+    "city": "Ессентуки",
+    "address": "ул. Володарского, 55",
+    "notes": "2 филиала",
+    "aggregators": "JSprav, 2GIS"
+  },
+  {
+    "id": "CMP0050",
+    "name": "Ритуал",
+    "city": "Ессентуки",
+    "address": "Октябрьская ул., 464/3",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0051",
+    "name": "Ритуальные услуги",
+    "city": "Ессентуки",
+    "address": "Большевистская улица",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0052",
+    "name": "Ритуальные услуги",
+    "city": "Ессентуки",
+    "address": "ул. Луначарского, 66А",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0053",
+    "name": "Стикс",
+    "city": "Ессентуки",
+    "address": "Первомайская ул., 148",
+    "aggregators": "2GIS"
+  },
+  {
+    "id": "CMP0054",
+    "name": "Две свечи",
+    "city": "Ессентуки",
+    "address": "ул. Мичурина, 84, ст-ца Ессентукская",
+    "phones": "+7 (928) 817-26-46",
+    "notes": "Предгорный район",
+    "aggregators": "2GIS"
+  },
+  {
+    "id": "CMP0055",
+    "name": "Магазин ритуальных принадлежностей",
+    "city": "Ессентуки",
+    "address": "Ул. 6-ти Коммунаров, 13в, ст-ца Ессентукская",
+    "notes": "Предгорный район",
+    "aggregators": "2GIS"
+  },
+  {
+    "id": "CMP0056",
+    "name": "Ритуал",
+    "city": "Минеральные Воды",
+    "address": "Кисловодская ул., 59",
+    "phones": "+7 (928) 348-93-30",
+    "website": "mv-ritual.ru",
+    "whatsapp": "https://wa.me/79283489330",
+    "notes": "Филиалы: ул. 50 лет Октября 101, ул. Аэропорта 3, Зелёная ул. 1 (пос. Ленинский)",
+    "aggregators": "JSprav, 2GIS, Яндекс.Карты"
+  },
+  {
+    "id": "CMP0057",
+    "name": "МБУ Ритуал",
+    "city": "Минеральные Воды",
+    "address": "ул. 50 лет Октября, 142",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0058",
+    "name": "Ритуальные принадлежности",
+    "city": "Минеральные Воды",
+    "address": "ул. Аэропорта, 1",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0059",
+    "name": "Салон ритуальных услуг",
+    "city": "Минеральные Воды",
+    "address": "ул. Островского, 89",
+    "notes": "Гранитная мастерская",
+    "aggregators": "JSprav, 2GIS"
+  },
+  {
+    "id": "CMP0060",
+    "name": "Магазин ритуальных принадлежностей",
+    "city": "Минеральные Воды",
+    "address": "Шоссейная ул., 32",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0061",
+    "name": "Ритуальные услуги",
+    "city": "Минеральные Воды",
+    "address": "ул. 50 лет Октября, 115",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0062",
+    "name": "Ритуальные услуги",
+    "city": "Минеральные Воды",
+    "address": "Цветочная ул., 1А, пос. Ленинский",
+    "aggregators": "JSprav"
+  },
+  {
+    "id": "CMP0063",
+    "name": "Ритуальные услуги",
+    "city": "Минеральные Воды",
+    "address": "Зелёная ул., 2, пос. Ленинский",
+    "aggregators": "JSprav"
+  }
+]
