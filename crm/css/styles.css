@@ -70,6 +70,7 @@ body {
 .py1 { padding-top: 4px; padding-bottom: 4px; }
 .py2 { padding-top: 8px; padding-bottom: 8px; }
 .py3 { padding-top: 12px; padding-bottom: 12px; }
+.mt2 { margin-top: 8px; }
 .mt3 { margin-top: 12px; }
 .rel { position: relative; }
 .abs { position: absolute; }
@@ -87,9 +88,8 @@ header {
   flex-shrink: 0;
 }
 
+/* Footer styles - see also .stats-footer below */
 footer {
-  background: var(--bg2);
-  border-top: 1px solid var(--bdr);
   flex-shrink: 0;
 }
 
@@ -114,14 +114,17 @@ main { flex: 1; overflow: auto; }
 .btn:hover { background: var(--hov); border-color: var(--bdr2); }
 .btn:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
 
+/* Primary button - main actions */
 .btn-p { background: var(--acc); border-color: var(--acc); color: #fff; }
 .btn-p:hover { background: var(--acc2); border-color: var(--acc2); }
 
+/* Small button */
 .btn-s { padding: 4px 10px; font-size: 11px; }
 
+/* Icon-only button */
 .btn-icon {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   display: inline-flex;
   align-items: center;
@@ -132,7 +135,7 @@ main { flex: 1; overflow: auto; }
   background: transparent;
   color: var(--mut);
   transition: all .15s ease;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .btn-icon:hover { color: var(--acc); background: var(--hov); }
@@ -154,6 +157,88 @@ input[type="text"]:focus, .inp:focus { border-color: var(--acc); }
 input[type="text"]::placeholder, .inp::placeholder { color: var(--mut); }
 
 input[type="checkbox"] { accent-color: var(--acc); width: 14px; height: 14px; cursor: pointer; }
+
+/* ===== DROPDOWN MENU ===== */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: var(--bg2);
+  border: 1px solid var(--bdr);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
+  min-width: 180px;
+  z-index: 50;
+  padding: 4px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--txt);
+  cursor: pointer;
+  transition: background .1s ease;
+}
+
+.dropdown-item:hover { background: var(--hov); }
+.dropdown-item i { font-size: 14px; color: var(--mut); }
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--bdr);
+  margin: 4px 0;
+}
+
+.dropdown-section {
+  padding: 4px;
+}
+
+.dropdown-section-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--mut);
+  padding: 4px 8px;
+}
+
+.dropdown-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+}
+
+/* ===== STATUS DOT ===== */
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mut);
+  margin-left: 4px;
+  animation: dot-pulse 1.5s ease-in-out infinite;
+}
+
+.status-ok {
+  background: var(--cg);
+  animation: none;
+}
+
+.status-err {
+  background: var(--cr);
+  animation: none;
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
 
 /* ===== AREAS PAGE ===== */
 .area-card {
@@ -273,22 +358,78 @@ input[type="checkbox"] { accent-color: var(--acc); width: 14px; height: 14px; cu
   text-align: right;
 }
 
+/* ===== BATCH BAR - SIMPLIFIED ===== */
 .ch-batch-bar {
   display: none;
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  background: var(--bg3);
-  border-bottom: 1px solid var(--bdr);
+  background: rgba(99, 102, 241, .1);
+  border-bottom: 1px solid var(--acc);
 }
 
 .ch-batch-bar.visible { display: flex; }
 
-.ch-selected-count {
-  font-size: 11px;
-  font-weight: 700;
+.ch-batch-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--acc);
-  margin-right: 4px;
+  padding-right: 8px;
+  border-right: 1px solid var(--bdr);
+}
+
+.ch-batch-count-num {
+  font-size: 14px;
+}
+
+/* Batch actions dropdown */
+.ch-batch-actions {
+  position: relative;
+}
+
+.ch-batch-dd {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: var(--bg2);
+  border: 1px solid var(--bdr);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
+  min-width: 200px;
+  z-index: 50;
+  padding: 4px;
+  display: none;
+}
+
+.ch-batch-dd.visible { display: block; }
+
+.ch-batch-dd-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--txt);
+  cursor: pointer;
+  transition: background .1s ease;
+}
+
+.ch-batch-dd-item:hover { background: var(--hov); }
+.ch-batch-dd-item i { font-size: 14px; color: var(--mut); width: 16px; }
+.ch-batch-dd-item.primary { color: var(--acc); }
+.ch-batch-dd-item.primary i { color: var(--acc); }
+.ch-batch-dd-item.danger { color: var(--cr); }
+.ch-batch-dd-item.danger i { color: var(--cr); }
+
+.ch-batch-dd-divider {
+  height: 1px;
+  background: var(--bdr);
+  margin: 4px 0;
 }
 
 /* ===== LIST SECTIONS ===== */
@@ -475,17 +616,17 @@ input[type="checkbox"] { accent-color: var(--acc); width: 14px; height: 14px; cu
 .stn { font-size: 14px; font-weight: 700; color: var(--hd); }
 .stl { font-size: 9px; color: var(--mut); margin-top: 1px; }
 
-/* ===== TOGGLES ===== */
+/* ===== TOGGLES (in dropdown) ===== */
 .tog {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 8px;
+  padding: 4px 8px;
   border-radius: 4px;
-  font-size: 10px;
+  font-size: 11px;
   cursor: pointer;
   border: 1px solid var(--bdr);
-  background: var(--bg2);
+  background: var(--bg3);
   color: var(--txt);
   transition: all .15s ease;
   user-select: none;
@@ -582,32 +723,6 @@ input[type="checkbox"] { accent-color: var(--acc); width: 14px; height: 14px; cu
 }
 
 .ch-copy-btn:hover { color: var(--acc); background: var(--hov); }
-
-/* ===== EMAIL DOT INDICATOR ===== */
-.email-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--mut);
-  margin-left: 6px;
-  animation: email-dot-pulse 1.5s ease-in-out infinite;
-}
-
-.email-dot-ok {
-  background: var(--cg);
-  animation: none;
-}
-
-.email-dot-err {
-  background: var(--cr);
-  animation: none;
-}
-
-@keyframes email-dot-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
 
 /* ===== EMAIL MODAL ===== */
 .email-modal {
@@ -895,6 +1010,156 @@ input[type="checkbox"] { accent-color: var(--acc); width: 14px; height: 14px; cu
 
 /* ===== LOG WARN ===== */
 .email-log-warn { color: var(--cy); }
+
+/* ===== STATS FOOTER ===== */
+.stats-footer {
+  background: var(--bg3);
+  border-top: 1px solid var(--bdr);
+  padding: 8px 16px;
+  flex-shrink: 0;
+}
+
+.stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.stats-bar .stb {
+  background: var(--bg2);
+  border: 1px solid var(--bdr);
+  border-radius: 4px;
+  padding: 4px 8px;
+  min-width: 40px;
+}
+
+.stats-bar .stn {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.stats-bar .stl {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+}
+
+/* ===== BACKUP MODAL ===== */
+.backup-modal {
+  max-width: 480px;
+  max-height: 70vh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.backup-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--bdr);
+}
+
+.backup-modal-head h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--hd);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.backup-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  max-height: 400px;
+}
+
+.backup-date-group {
+  margin-bottom: 12px;
+}
+
+.backup-date-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--mut);
+  padding: 4px 8px;
+  margin-bottom: 6px;
+}
+
+.backup-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--bdr);
+  border-radius: 6px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+
+.backup-item:hover {
+  border-color: var(--acc);
+  background: var(--hov);
+}
+
+.backup-item-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.backup-item-info i {
+  font-size: 14px;
+  color: var(--acc);
+}
+
+.backup-item-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--txt);
+}
+
+.backup-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--mut);
+}
+
+.backup-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--mut);
+  text-align: center;
+}
+
+.backup-empty i {
+  font-size: 32px;
+  margin-bottom: 8px;
+  opacity: .5;
+}
+
+.backup-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  color: var(--cr);
+  font-size: 12px;
+}
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 640px) {

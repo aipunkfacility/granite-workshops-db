@@ -16,18 +16,54 @@ CRM (браузер) ──fetch()──▶ Сервер (localhost:8000) ──
 **Архитектура хранения:**
 - JSON файлы в `crm/db/` — **главный источник** (переживают всё)
 - IndexedDB в браузере — быстрый кэш (пересоздаётся из файлов при старте)
+- Автоматические бэкапы в `crm/backups/` перед каждым сохранением
 
 ## Установка
 
 ```bash
-cd email
+cd crm
 python -m pip install -r requirements.txt
 ```
 
 ## Настройка
 
-1. Откройте `config.json`
-2. Вставьте App Password от Gmail в поле `sender_password`
+### Шаг 1: Создайте config.json
+
+```bash
+cp config.example.json config.json
+```
+
+Отредактируйте `config.json`:
+
+```json
+{
+  "sender_email": "your_email@gmail.com",
+  "sender_password": "",  // Оставьте пустым, используйте .env
+  "smtp_server": "smtp.gmail.com",
+  "smtp_port": 587,
+  "email_subject": "Ваше письмо",
+  "template_file": "email_template.html",
+  "delay_min": 2,
+  "delay_max": 5
+}
+```
+
+### Шаг 2: Настройте пароль (рекомендуется .env)
+
+**Вариант A: Через .env файл (рекомендуется)**
+
+```bash
+cp .env.example .env
+```
+
+Отредактируйте `.env`:
+```
+GMAIL_APP_PASSWORD=abcdefghijklmnop
+```
+
+**Вариант B: Напрямую в config.json**
+
+Вставьте App Password в поле `sender_password` (без пробелов!).
 
 > **Важно:** Пароль записывается **без пробелов**!
 > Если Google выдал `abcd efgh ijkl mnop` → в конфиге пишите `abcdefghijklmnop`
@@ -39,7 +75,7 @@ python -m pip install -r requirements.txt
 3. В поиске на странице введите «Пароли приложений»
 4. Нажмите «Создать», введите название (например, «Granite Sender»)
 5. Скопируйте 16-значный код
-6. Вставьте в `config.json` **без пробелов**
+6. Вставьте в `.env` или `config.json` **без пробелов**
 
 ## Запуск
 
@@ -52,7 +88,7 @@ python -m pip install -r requirements.txt
 ### Способ 2: Командная строка
 
 ```bash
-cd email
+cd crm
 python -m uvicorn server:app --host 127.0.0.1 --port 8000
 ```
 
@@ -65,23 +101,36 @@ python -m uvicorn server:app --host 127.0.0.1 --port 8000
 {"status": "ok", "server": "email-sender", "timestamp": "..."}
 ```
 
-## Как работает хранение данных
+## Новые возможности
 
-### При запуске CRM
-1. CRM загружается в браузере
-2. Автоматически запрашивает `GET /db/list` — список файлов
-3. Загружает каждый JSON через `GET /db/{filename}`
-4. Заполняет IndexedDB данными
+### Автоматические бэкапы
 
-### При изменении в CRM
-1. Каждое изменение (отметка, редактирование, импорт) → `PUT /db/{filename}`
-2. Файл на диске обновляется с задержкой 1 сек (debounce)
-3. IndexedDB обновляется мгновенно
+Перед каждым сохранением файла создаётся бэкап:
+- Расположение: `crm/backups/`
+- Формат: `filename.YYYYMMDD_HHMMSS.bak`
+- Хранятся последние 10 бэкапов на файл
 
-### Почему это надёжно
-- **JSON файлы на диске** — переживают очистку кэша, перезагрузку, обновление браузера
-- **IndexedDB** — только кэш для скорости, можно пересоздать в любой момент
-- **Автосохранение** — каждое изменение уходит на сервер
+**Восстановление из бэкапа:**
+
+```bash
+# Через API
+POST /db/filename.json/restore
+
+# Или вручную
+cp crm/backups/filename.20240115_143022.bak crm/db/filename.json
+```
+
+### Логирование
+
+Логи пишутся в `crm/logs/crm_server.log`:
+- Ротация: 5MB на файл
+- Хранятся последние 5 файлов
+
+### Валидация данных
+
+- Проверка размера JSON (максимум 10MB по умолчанию)
+- Атомарная запись (через temp-файл)
+- Восстановление из бэкапа при повреждении
 
 ## Использование из CRM
 
@@ -108,8 +157,10 @@ python -m uvicorn server:app --host 127.0.0.1 --port 8000
 |-------|------|----------|
 | GET | `/db/list` | Список JSON файлов |
 | GET | `/db/{filename}` | Прочитать файл |
-| PUT | `/db/{filename}` | Сохранить файл |
-| DELETE | `/db/{filename}` | Удалить файл |
+| PUT | `/db/{filename}` | Сохранить файл (с бэкапом) |
+| DELETE | `/db/{filename}` | Удалить файл (с бэкапом) |
+| GET | `/db/{filename}/backups` | Список бэкапов |
+| POST | `/db/{filename}/restore` | Восстановить из бэкапа |
 
 ## Частые ошибки
 
@@ -126,29 +177,46 @@ python -m uvicorn server:app --host 127.0.0.1 --port 8000
 - Сервер не запущен → запустите `start.bat`
 - Файлы `crm/db/*.json` отсутствуют → загрузите CSV через CRM
 
+### JSON файл повреждён
+- API вернёт ошибку с информацией о бэкапе
+- Восстановите: `POST /db/filename.json/restore`
+
 ## Структура файлов
 
 ```
-email/
+crm/
 ├── server.py              # FastAPI сервер (email + db)
 ├── config.json            # SMTP настройки (не коммитить!)
+├── config.example.json    # Пример конфига
+├── .env                   # Переменные окружения (не коммитить!)
+├── .env.example           # Пример .env
 ├── requirements.txt       # Python зависимости
 ├── email_template.html    # HTML шаблон письма
 ├── start.bat              # Быстрый запуск
 ├── README.md              # Этот файл
-└── PLAN_EMAIL_INTEGRATION.md
-
-crm/
-├── db/
-│   └── Ростов.json        # Данные CRM (главный источник!)
-├── index.html
-├── css/
-└── js/
+├── db/                    # Данные CRM (главный источник!)
+│   └── *.json
+├── backups/               # Автоматические бэкапы
+│   └── *.json.*.bak
+└── logs/                  # Логи сервера
+    └── crm_server.log
 ```
 
 ## Безопасность
 
-- `config.json` добавлен в `.gitignore`
+- `config.json` и `.env` добавлены в `.gitignore`
 - Никогда не коммитьте пароль приложения
 - Сервер работает только на `127.0.0.1` (localhost)
 - Защита от path traversal в `/db/` эндпоинтах
+- Переменные окружения приоритетнее config.json
+
+## Changelog
+
+### v2.0.0
+- ✅ Автоматические бэкапы перед каждым сохранением
+- ✅ Логирование в файл с ротацией
+- ✅ Валидация JSON перед записью
+- ✅ Атомарная запись файлов
+- ✅ Поддержка переменных окружения (.env)
+- ✅ API для восстановления из бэкапа
+- ✅ Улучшенная обработка ошибок

@@ -9,7 +9,7 @@
 <script src="https://unpkg.com/dexie@3.2.7/dist/dexie.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/styles.css?v=3">
 </head>
 <body class="fl fl-col" style="height:100vh">
 
@@ -20,12 +20,15 @@
       <i class="ri-contacts-book-2-fill" style="color:var(--acc)"></i> Mini CRM
     </h1>
     <div class="f1"></div>
-    <span id="serverStatusDot" class="email-dot" title="Проверка сервера..."></span>
-    <button class="btn-icon" onclick="toggleTheme()" title="Тема">
+    <span id="serverStatusDot" class="status-dot" title="Проверка сервера..."></span>
+    <button class="btn-icon" onclick="toggleTheme()" title="Сменить тему">
       <i class="ri-moon-clear-fill" id="themeBtn"></i>
     </button>
     <button class="btn btn-p" onclick="ImportExport.openUpload()">
-      <i class="ri-folder-upload-line"></i> CSV
+      <i class="ri-folder-upload-line"></i> Импорт
+    </button>
+    <button class="btn btn-s" onclick="BackupManager.openModal()" title="Бекапы">
+      <i class="ri-history-line"></i>
     </button>
   </header>
   <main class="f1 oa" id="areasList"></main>
@@ -34,8 +37,8 @@
 <!-- PAGE: CONTACTS -->
 <div id="pageContacts" class="fl fl-col" style="display:none;height:100vh">
   <header class="px4 py2 fl ac gap3">
-    <button class="btn btn-s" onclick="State.goAreas()">
-      <i class="ri-arrow-left-line"></i> Назад
+    <button class="btn-icon" onclick="State.goAreas()" title="Назад к областям">
+      <i class="ri-arrow-left-line"></i>
     </button>
     <h2 id="areaTitle" style="font-size:14px;font-weight:700;color:var(--hd)"></h2>
     <div class="f1"></div>
@@ -43,26 +46,44 @@
       <i class="ri-search-line abs" style="left:8px;top:50%;transform:translateY(-50%);color:var(--mut);font-size:13px"></i>
       <input type="text" id="searchInp" class="inp" style="padding-left:30px;width:160px" placeholder="Поиск...">
     </div>
-    <button class="btn-icon" onclick="toggleTheme()" title="Тема">
-      <i class="ri-moon-clear-fill"></i>
+    
+    <!-- Export button -->
+    <button class="btn btn-s" onclick="ImportExport.doExport('all')" title="Экспорт в Excel">
+      <i class="ri-file-download-line"></i>
     </button>
-    <button class="btn btn-s" onclick="ImportExport.openExportDD(event)">
-      <i class="ri-file-download-line"></i> XLSX
-    </button>
-    <div id="exportDD" class="expdd" style="display:none">
-      <div class="expdd-item" onclick="ImportExport.doExport('all')">Все контакты</div>
-      <div class="expdd-item" onclick="ImportExport.doExport('active')">Без архива</div>
+    
+    <!-- Settings dropdown -->
+    <div class="rel">
+      <button class="btn-icon" onclick="toggleSettingsDD(event)" title="Настройки">
+        <i class="ri-settings-3-line"></i>
+      </button>
+      <div id="settingsDD" class="dropdown-menu" style="display:none">
+        <div class="dropdown-section">
+          <div class="dropdown-section-title">Показывать поля</div>
+          <div id="fieldTogglesDD" class="dropdown-toggles"></div>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item" onclick="BackupManager.openModal(State.currentArea);toggleSettingsDD(event)">
+          <i class="ri-history-line"></i> Восстановить из бекапа
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item" onclick="toggleTheme();toggleSettingsDD(event)">
+          <i class="ri-moon-line"></i> Сменить тему
+        </div>
+      </div>
     </div>
-    <button class="btn btn-s" onclick="EmailSender.triggerSend()" title="Email рассылка" id="emailSendHeaderBtn">
-      <i class="ri-mail-send-line"></i> Email
-      <span id="emailServerDot" class="email-dot" title="Проверка сервера..."></span>
+    
+    <button class="btn btn-p" onclick="EmailSender.triggerSend()" title="Email рассылка выбранным" id="emailSendHeaderBtn">
+      <i class="ri-mail-send-line"></i>
+      <span id="emailServerDot" class="status-dot" title="Проверка сервера..."></span>
     </button>
   </header>
-  <div id="fieldToggles" class="px4 py1 fl ac gap2" style="background:var(--bg2);border-bottom:1px solid var(--bdr)"></div>
+  
   <div id="channelTabs" class="ch-tabs"></div>
   <main class="f1 oa" id="checklistContainer"></main>
-  <footer id="statsFooter" class="px4 py2" style="display:none">
-    <div class="fl ac gap2" id="statsBar"></div>
+  
+  <footer id="statsFooter" class="stats-footer" style="display:none">
+    <div class="stats-bar" id="statsBar"></div>
   </footer>
 </div>
 
@@ -72,6 +93,9 @@
 <!-- EMAIL MODAL -->
 <div id="emailModal" class="ov" style="display:none"></div>
 
+<!-- BACKUP MODAL -->
+<div id="backupModal" class="ov" style="display:none"></div>
+
 <!-- SCRIPTS -->
 <script src="js/utils.js"></script>
 <script src="js/state.js"></script>
@@ -80,6 +104,7 @@
 <script src="js/batch.js"></script>
 <script src="js/import-export.js"></script>
 <script src="js/email-sender.js"></script>
+<script src="js/backup-manager.js"></script>
 
 <script>
 function toggleTheme() {
@@ -105,9 +130,22 @@ function toggleField(k) {
   Render.renderChecklist();
 }
 
+// Settings dropdown toggle
+function toggleSettingsDD(e) {
+  e.stopPropagation();
+  const d = document.getElementById('settingsDD');
+  d.style.display = d.style.display === 'block' ? 'none' : 'block';
+  if (d.style.display === 'block') {
+    Render.renderFieldToggles();
+  }
+}
+
+// Close dropdowns on outside click
 document.addEventListener('click', function (e) {
-  if (!e.target.closest('#exportDD') && !e.target.closest('[onclick*="openExportDD"]')) {
-    ImportExport.closeExportDD();
+  // Close settings dropdown
+  if (!e.target.closest('#settingsDD') && !e.target.closest('[onclick*="toggleSettingsDD"]')) {
+    const d = document.getElementById('settingsDD');
+    if (d) d.style.display = 'none';
   }
 });
 
@@ -133,13 +171,13 @@ document.addEventListener('DOMContentLoaded', async function () {
     EmailSender.checkServer().then(ok => {
       const dot = document.getElementById('emailServerDot');
       if (dot) {
-        dot.className = 'email-dot' + (ok ? ' email-dot-ok' : ' email-dot-err');
+        dot.className = 'status-dot' + (ok ? ' status-ok' : ' status-err');
         dot.title = ok ? 'Сервер запущен' : 'Сервер не запущен';
       }
       // Also update main page dot
       const mainDot = document.getElementById('serverStatusDot');
       if (mainDot) {
-        mainDot.className = 'email-dot' + (ok ? ' email-dot-ok' : ' email-dot-err');
+        mainDot.className = 'status-dot' + (ok ? ' status-ok' : ' status-err');
         mainDot.title = ok ? 'Сервер запущен' : 'Сервер не запущен';
       }
     });

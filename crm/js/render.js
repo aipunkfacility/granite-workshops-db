@@ -126,8 +126,12 @@ Render.deleteArea = async function (areaName, event) {
   }
 };
 
+/* Field toggles now render inside the settings dropdown */
 Render.renderFieldToggles = function () {
-  document.getElementById('fieldToggles').innerHTML = FIELDS.map(f => {
+  const container = document.getElementById('fieldTogglesDD');
+  if (!container) return;
+  
+  container.innerHTML = FIELDS.map(f => {
     const off = State.hiddenFields.has(f.k) ? ' off' : '';
     return '<span class="tog' + off + '" onclick="toggleField(\'' + f.k + '\')"><i class="' + f.icon + '"></i> ' + esc(f.l) + '</span>';
   }).join('');
@@ -185,15 +189,26 @@ Render.renderChecklist = async function () {
     h += '<span class="ch-progress-text">' + sentCount + '/' + total + '</span>';
     h += '</div>';
 
+    // Simplified batch bar with dropdown
     const batchVisible = State.selectedIds.size > 0;
     h += '<div class="ch-batch-bar' + (batchVisible ? ' visible' : '') + '">';
-    h += '<span class="ch-selected-count">' + State.selectedIds.size + '</span>';
-    h += '<button class="btn btn-s" onclick="Batch.selectUnsent(window._chkList)">Неотправл.</button>';
-    h += '<button class="btn btn-s" onclick="Batch.selectSent(window._chkList)">Отправл.</button>';
-    h += '<button class="btn btn-s btn-p" onclick="Batch.markSelected()">Отметить</button>';
-    h += '<button class="btn btn-s" onclick="Batch.undoSelected()">Снять</button>';
-    h += '<button class="btn btn-s btn-p" onclick="Batch.sendEmails()"><i class="ri-mail-send-line"></i> Рассылка</button>';
-    h += '<button class="btn btn-s" onclick="State.clearSelection();Render.renderChecklist()">Сброс</button>';
+    h += '<div class="ch-batch-count">';
+    h += '<span class="ch-batch-count-num">' + State.selectedIds.size + '</span> выбрано';
+    h += '</div>';
+    
+    // Primary actions as icon buttons
+    h += '<button class="btn btn-s btn-p" onclick="Batch.markSelected()" title="Отметить как отправленные"><i class="ri-check-line"></i></button>';
+    h += '<button class="btn btn-s" onclick="Batch.sendEmails()" title="Email рассылка"><i class="ri-mail-send-line"></i></button>';
+    
+    // More actions dropdown
+    h += '<div class="ch-batch-actions">';
+    h += '<button class="btn btn-s" onclick="toggleBatchDD(event)" title="Ещё действия"><i class="ri-more-2-fill"></i></button>';
+    h += '<div id="batchDD" class="ch-batch-dd">';
+    h += '<div class="ch-batch-dd-item" onclick="Batch.selectUnsent(window._chkList);toggleBatchDD(event)"><i class="ri-checkbox-multiple-line"></i> Выбрать неотправленные</div>';
+    h += '<div class="ch-batch-dd-item" onclick="Batch.selectSent(window._chkList);toggleBatchDD(event)"><i class="ri-checkbox-multiple-line"></i> Выбрать отправленные</div>';
+    h += '<div class="ch-batch-dd-divider"></div>';
+    h += '<div class="ch-batch-dd-item" onclick="State.clearSelection();Render.renderChecklist()"><i class="ri-close-line"></i> Сбросить выбор</div>';
+    h += '</div></div>';
     h += '</div>';
 
     h += '<div class="ch-section">';
@@ -226,6 +241,23 @@ Render.renderChecklist = async function () {
     toast('Ошибка', 'err');
   }
 };
+
+/* Toggle batch dropdown */
+function toggleBatchDD(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('batchDD');
+  if (dd) {
+    dd.classList.toggle('visible');
+  }
+}
+
+// Close batch dropdown on outside click
+document.addEventListener('click', function(e) {
+  const dd = document.getElementById('batchDD');
+  if (dd && dd.classList.contains('visible') && !e.target.closest('.ch-batch-actions')) {
+    dd.classList.remove('visible');
+  }
+});
 
 Render.renderCheckRow = function (c, ch, isSent) {
   const selected = State.selectedIds.has(c.id);

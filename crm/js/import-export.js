@@ -198,12 +198,13 @@ ImportExport.openExportDD = function (event) {
   const btn = event.target.closest('button');
   const r = btn.getBoundingClientRect();
   d.style.top = (r.bottom + 4) + 'px';
-  d.style.left = r.left + 'px';
+  d.style.left = (r.left + r.width - 180) + 'px';
   d.style.display = d.style.display === 'block' ? 'none' : 'block';
 };
 
 ImportExport.closeExportDD = function () {
-  document.getElementById('exportDD').style.display = 'none';
+  const el = document.getElementById('exportDD');
+  if (el) el.style.display = 'none';
 };
 
 /* ---------- XLSX EXPORT ---------- */

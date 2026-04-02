@@ -35,7 +35,10 @@ function initDB() {
 
 /* ===== SERVER-BASED PERSISTENCE ===== */
 
-const SERVER_URL = 'http://localhost:8000';
+// Use window.location.origin when served by server, fallback to localhost for development
+const SERVER_URL = (typeof window !== 'undefined' && window.location && window.location.origin) 
+  ? window.location.origin 
+  : 'http://localhost:8000';
 
 /**
  * Check if server is reachable.
