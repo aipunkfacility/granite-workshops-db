@@ -19,6 +19,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.ruff_cache/
 
 # Virtual environments
 .venv/
@@ -49,3 +50,9 @@ Thumbs.db
 *.bak
 *.csv.bak
 rostov_enriched_2.csv
+
+# Data directories
+cities/
+reports/
+.opencode/
+docs/

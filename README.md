@@ -1,8 +1,12 @@
-# Funeral Agency Database
+# Granite Workshops Database
 
 ## Обзор
 
-Сбор базы ритуальных агентств и производителей памятников по городам России. Используется для поиска подрядчиков (ретушеров) и рассылки предложений.
+Сбор базы **гранитных мастерских** и **производителей памятников** по городам России.
+
+**Целевая аудитория:** Компании, которым предлагаются услуги **ретушера фото** для обработки портретов на памятники.
+
+> Ранее проект собирал ритуальные агентства. Переориентирован на производителей памятников (B2B).
 
 ## Workflow (3 этапа)
 
@@ -39,15 +43,18 @@ funeral-agency-db/
 ├── agents/
 │   └── funeral-scraper.md  # Агент сбора
 ├── scripts/
-│   ├── scrape_city.py      # Python скрипт сбора
+│   ├── scrape_city.py      # Python скрипт сбора (ритуальные)
+│   ├── firecrawl_granite.py # Firecrawl сбор гранитных мастерских
 │   └── pyproject.toml     # Зависимости
 ├── cities/
 │   └── {city-name}/
-│       ├── companies.md     # ВСЕ компании (база)
+│       ├── companies.md     # ВСЕ компании (ритуальные)
 │       ├── companies.json   # JSON с данными
 │       ├── data.md         # Только с Telegram (приоритет)
 │       ├── summary.md      # Саммари с Telegram
-│       └── report.md       # Отчёт с рекомендациями
+│       ├── report.md       # Отчёт с рекомендациями
+│       ├── granite_companies.csv   # CSV для рассылки (NEW)
+│       └── granite_companies.md     # Markdown отчёт (NEW)
 └── reports/
     └── progress.md         # Прогресс обработки
 ```
@@ -90,6 +97,31 @@ funeral-agency-db/
 Примеры:
 - `+7 903 955 81 17 Telegram` → t.me/evlitos
 - `8 937 821 77 77 Telegram` → t.me/username (если найден)
+
+---
+
+## Сбор гранитных мастерских (Firecrawl)
+
+### Использование
+
+```bash
+# Поиск мастерских в городе
+npx -y firecrawl-cli@latest search "гранитная мастерская Москва" --limit 10
+
+# Детальный сбор
+npx -y firecrawl-cli@latest scrape "https://igranit.ru/" --format markdown
+
+# Скрипт
+python scripts/firecrawl_granite.py Москва
+```
+
+### Целевая аудитория
+
+Гранитные мастерские заказывают:
+- Портреты на памятники (фото усопших)
+- Цветная печать на граните
+- Гравировка макетов
+- Каталоги продукции
 
 ## Формат файлов
 
