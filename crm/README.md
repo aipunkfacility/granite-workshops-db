@@ -2,221 +2,165 @@
 
 ## Обзор
 
-Единый FastAPI сервер для двух задач:
-
-1. **Отправка email** — рассылка из CRM через Gmail
-2. **Хранение данных CRM** — JSON файлы на диске как главный источник
+FastAPI сервер для двух задач:
+1. **Email рассылка** — через Gmail SMTP
+2. **CRM данные** — JSON файлы на диске
 
 ```
 CRM (браузер) ──fetch()──▶ Сервер (localhost:8000) ──SMTP──▶ Gmail
                                       │
-                                      └── чтение/запись crm/db/*.json
+                                      └── crm/db/*.json
 ```
 
 **Архитектура хранения:**
-- JSON файлы в `crm/db/` — **главный источник** (переживают всё)
-- IndexedDB в браузере — быстрый кэш (пересоздаётся из файлов при старте)
-- Автоматические бэкапы в `crm/backups/` перед каждым сохранением
+- `crm/db/*.json` — главный источник
+- IndexedDB в браузере — быстрый кэш
+- `crm/backups/` — автоматические бэкапы
 
-## Установка
+## Быстрый старт
 
 ```bash
 cd crm
-python -m pip install -r requirements.txt
-```
-
-## Настройка
-
-### Шаг 1: Создайте config.json
-
-```bash
+pip install -r requirements.txt
 cp config.example.json config.json
+# Отредактируйте config.json и .env
+start.bat
 ```
 
-Отредактируйте `config.json`:
+Проверка: http://localhost:8000/health
 
-```json
-{
-  "sender_email": "your_email@gmail.com",
-  "sender_password": "",  // Оставьте пустым, используйте .env
-  "smtp_server": "smtp.gmail.com",
-  "smtp_port": 587,
-  "email_subject": "Ваше письмо",
-  "template_file": "email_template.html",
-  "delay_min": 2,
-  "delay_max": 5
-}
+## Установка Gmail
+
+1. Включите двухфакторную аутентификацию
+2. Создайте App Password: myaccount.google.com → Пароли приложений
+3. Добавьте в `.env`:
+```
+GMAIL_APP_PASSWORD=your_16_char_password
 ```
 
-### Шаг 2: Настройте пароль (рекомендуется .env)
+## curl примеры
 
-**Вариант A: Через .env файл (рекомендуется)**
+### Проверка сервера
 
 ```bash
-cp .env.example .env
+curl http://localhost:8000/health
+# {"status":"ok","server":"email-sender","db_files":2}
 ```
 
-Отредактируйте `.env`:
-```
-GMAIL_APP_PASSWORD=abcdefghijklmnop
-```
-
-**Вариант B: Напрямую в config.json**
-
-Вставьте App Password в поле `sender_password` (без пробелов!).
-
-> **Важно:** Пароль записывается **без пробелов**!
-> Если Google выдал `abcd efgh ijkl mnop` → в конфиге пишите `abcdefghijklmnop`
-
-### Как получить App Password от Gmail
-
-1. Зайдите в [Настройки безопасности Google](https://myaccount.google.com/security)
-2. Включите **двухэтапную аутентификацию** (обязательно!)
-3. В поиске на странице введите «Пароли приложений»
-4. Нажмите «Создать», введите название (например, «Granite Sender»)
-5. Скопируйте 16-значный код
-6. Вставьте в `.env` или `config.json` **без пробелов**
-
-## Запуск
-
-### Способ 1: Двойной клик (рекомендуется)
-
-Дважды кликните на `start.bat` — откроется окно с сервером.
-
-Не закрывайте это окно, пока работаете с CRM.
-
-### Способ 2: Командная строка
+### Отправка одного письма
 
 ```bash
-cd crm
-python -m uvicorn server:app --host 127.0.0.1 --port 8000
+curl -X POST http://localhost:8000/send/single \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","name":"Test","html":"<h1>Hello</h1>"}'
 ```
 
-### Проверка что сервер работает
-
-Откройте: http://localhost:8000/health
-
-Должно вернуться:
-```json
-{"status": "ok", "server": "email-sender", "timestamp": "..."}
-```
-
-## Новые возможности
-
-### Автоматические бэкапы
-
-Перед каждым сохранением файла создаётся бэкап:
-- Расположение: `crm/backups/`
-- Формат: `filename.YYYYMMDD_HHMMSS.bak`
-- Хранятся последние 10 бэкапов на файл
-
-**Восстановление из бэкапа:**
+### Рассылка (async)
 
 ```bash
-# Через API
-POST /db/filename.json/restore
+# Запуск
+curl -X POST http://localhost:8000/send/batch \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contacts":[
+      {"email":"user1@example.com","name":"User 1"},
+      {"email":"user2@example.com","name":"User 2"}
+    ],
+    "html":"<p>Batch email</p>"
+  }'
+# {"job_id":"bb0b18f4-...","total":2,"status":"started"}
 
-# Или вручную
-cp crm/backups/filename.20240115_143022.bak crm/db/filename.json
+# Проверка статуса
+curl http://localhost:8000/send/status/bb0b18f4-...
+
+# Отмена
+curl -X POST http://localhost:8000/send/cancel/bb0b18f4-...
 ```
 
-### Логирование
+### Работа с базой
 
-Логи пишутся в `crm/logs/crm_server.log`:
-- Ротация: 5MB на файл
-- Хранятся последние 5 файлов
+```bash
+# Список файлов
+curl http://localhost:8000/db/list
 
-### Валидация данных
+# Чтение
+curl http://localhost:8000/db/Rostov.json
 
-- Проверка размера JSON (максимум 10MB по умолчанию)
-- Атомарная запись (через temp-файл)
-- Восстановление из бэкапа при повреждении
+# Сохранение (с автобэкапом)
+curl -X PUT http://localhost:8000/db/data.json \
+  -H "Content-Type: application/json" \
+  -d '{"contacts":[{"name":"Test","phone":"+123"}]}'
 
-## Использование из CRM
+# Удаление (с бэкапом)
+curl -X DELETE http://localhost:8000/db/data.json
+```
 
-1. **Запустите сервер** (`start.bat`)
-2. Откройте CRM (`crm/index.html`)
-3. Данные загрузятся автоматически
-4. Работайте как обычно — всё сохраняется на диск
+### Бэкапы и восстановление
 
-## API Endpoints
+```bash
+# Все бэкапы
+curl http://localhost:8000/backups
 
-### Email
-| Метод | Путь | Описание |
-|-------|------|----------|
-| GET | `/health` | Проверка сервера |
-| POST | `/send/single` | Отправить одно письмо |
-| POST | `/send/batch` | Запустить пачку |
-| GET | `/send/status/{id}` | Статус рассылки |
-| POST | `/send/cancel/{id}` | Отменить рассылку |
-| GET | `/template` | Получить шаблон |
-| POST | `/template` | Обновить шаблон |
+# Бэкапы конкретного файла
+curl http://localhost:8000/db/Rostov.json/backups
 
-### Данные CRM
-| Метод | Путь | Описание |
-|-------|------|----------|
-| GET | `/db/list` | Список JSON файлов |
-| GET | `/db/{filename}` | Прочитать файл |
-| PUT | `/db/{filename}` | Сохранить файл (с бэкапом) |
-| DELETE | `/db/{filename}` | Удалить файл (с бэкапом) |
-| GET | `/db/{filename}/backups` | Список бэкапов |
-| POST | `/db/{filename}/restore` | Восстановить из бэкапа |
+# Восстановление
+curl -X POST http://localhost:8000/restore/Rostov.json.20260403_000048.bak
+```
 
-## Частые ошибки
+### Шаблон письма
 
-### «Username and Password not accepted»
-- Пароль в `config.json` записан **с пробелами** → уберите все пробелы
-- App Password истёк → создайте новый
-- Двухэтапная аутентификация не включена → включите её
+```bash
+# Получить
+curl http://localhost:8000/template
 
-### «Сервер не отвечает»
-- Окно `start.bat` закрыто → запустите заново
-- Порт 8000 занят → закройте другое приложение
+# Обновить
+curl -X POST http://localhost:8000/template \
+  -H "Content-Type: application/json" \
+  -d '{"html":"<html>...</html>"}'
+```
 
-### Данные не загружаются в CRM
-- Сервер не запущен → запустите `start.bat`
-- Файлы `crm/db/*.json` отсутствуют → загрузите CSV через CRM
+## Типы ошибок email
 
-### JSON файл повреждён
-- API вернёт ошибку с информацией о бэкапе
-- Восстановите: `POST /db/filename.json/restore`
+| Тип | Причина | Решение |
+|-----|---------|---------|
+| `smtp_error` | SMTP/авторизация | Проверьте App Password |
+| `connection_error` | Сеть/таймаут | Проверьте интернет |
+| `invalid_email` | Неверный email | Проверьте формат |
+| `unknown_error` | Другое | Смотрите логи |
 
 ## Структура файлов
 
 ```
 crm/
-├── server.py              # FastAPI сервер (email + db)
-├── config.json            # SMTP настройки (не коммитить!)
-├── config.example.json    # Пример конфига
-├── .env                   # Переменные окружения (не коммитить!)
-├── .env.example           # Пример .env
-├── requirements.txt       # Python зависимости
-├── email_template.html    # HTML шаблон письма
-├── start.bat              # Быстрый запуск
-├── README.md              # Этот файл
-├── db/                    # Данные CRM (главный источник!)
+├── server.py              # FastAPI сервер
+├── config.json            # SMTP настройки
+├── .env                   # Пароли (gitignore)
+├── db/                    # Данные CRM
 │   └── *.json
-├── backups/               # Автоматические бэкапы
-│   └── *.json.*.bak
-└── logs/                  # Логи сервера
-    └── crm_server.log
+├── backups/               # Автобэкапы
+│   └── *.bak
+└── logs/
+    └── crm_server.log     # Логи (ротация 5MB × 5)
 ```
+
+## Частые ошибки
+
+**«Username and Password not accepted»**
+- Пароль с пробелами → уберите пробелы
+- App Password истёк → создайте новый
+
+**«Сервер не отвечает»**
+- `start.bat` закрыт → перезапустите
+- Порт 8000 занят → закройте другое приложение
+
+**JSON повреждён**
+- API вернёт ошибку с путём к бэкапу
+- Восстановите: `POST /restore/{backup_name}`
 
 ## Безопасность
 
-- `config.json` и `.env` добавлены в `.gitignore`
-- Никогда не коммитьте пароль приложения
-- Сервер работает только на `127.0.0.1` (localhost)
-- Защита от path traversal в `/db/` эндпоинтах
-- Переменные окружения приоритетнее config.json
-
-## Changelog
-
-### v2.0.0
-- ✅ Автоматические бэкапы перед каждым сохранением
-- ✅ Логирование в файл с ротацией
-- ✅ Валидация JSON перед записью
-- ✅ Атомарная запись файлов
-- ✅ Поддержка переменных окружения (.env)
-- ✅ API для восстановления из бэкапа
-- ✅ Улучшенная обработка ошибок
+- `config.json` и `.env` в `.gitignore`
+- Только localhost (127.0.0.1)
+- Path traversal защита
+- Атомарная запись файлов
