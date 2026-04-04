@@ -34,22 +34,25 @@
 
 ```text
 granite-workshops-db/
-├── config.yaml              # 44 города России
+├── config.yaml              # Список 44 городов и настройки сбора
 ├── messenger_search.py      # Скрипт поиска мессенджеров на сайтах
-├── analyze_networks_v3.py  # Скрипт поиска сетевых компаний (филиалов)
+├── analyze_networks_v3.py  # Скрипт поиска сетевых компаний (актуальная V3)
+├── analyze_networks.py      # (V1) Архив
+├── analyze_networks_v2.py   # (V2) Архив
+├── requirements.txt         # Список зависимостей
 ├── agents/
 │   ├── funeral-scraper.md  # Агент сбора (основной)
 │   └── funeral-scraper-context.md # Контекст и знания агента
 ├── scripts/
-│   ├── firecrawl_granite.py # Firecrawl сбор гранитных мастерских
-│   ├── scrape_city.py      # Python скрипт сбора (классический)
+│   ├── firecrawl_granite.py # Firecrawl сборщик
+│   ├── scrape_city.py      # Скрапинг городов (Playwright)
 │   ├── scrape_fast.py      # Ускоренный сбор данных
-│   ├── tg_phone_finder.py  # Поиск Telegram по номерам телефонов
-│   ├── pyproject.toml      # Зависимости (uv)
+│   ├── tg_phone_finder.py  # Поиск Telegram по номерам
+│   ├── pyproject.toml      # Конфигурация зависимостей (uv)
 │   └── uv.lock             # Lock-файл зависимостей
 ├── cities/
 │   └── {city-name}/
-│       ├── companies.md     # ВСЕ компании (ритуальные)
+│       ├── companies.md     # ВСЕ компании
 │       ├── granite_companies.csv   # CSV для рассылки (Итоговый)
 │       ├── data.md         # Только с Telegram (приоритет)
 │       ├── summary.md      # Саммари с Telegram
@@ -57,32 +60,6 @@ granite-workshops-db/
 └── reports/
     └── progress.md         # Прогресс обработки
 ```
-
-## Основные скрипты
-
-### Сбор через Firecrawl (Рекомендовано)
-Самый эффективный способ поиска именно гранитных мастерских.
-```bash
-python scripts/firecrawl_granite.py "Новосибирск"
-```
-
-### Поиск мессенджеров
-Обогащает существующий CSV ссылками на соцсети и чаты.
-```bash
-python messenger_search.py
-```
-
-### Анализ сетевых компаний
-Находит компании, представленные в нескольких городах.
-```bash
-python analyze_networks_v3.py
-```
-
-## Требования
-Проект использует `uv` для управления зависимостями.
-- Python 3.10+
-- `firecrawl-cli` (npx)
-- Playwright (для динамического скрапинга)
 
 ## Приоритет контактов
 
@@ -127,17 +104,26 @@ python analyze_networks_v3.py
 
 ## Сбор гранитных мастерских (Firecrawl)
 
+**Firecrawl** — основной инструмент для поиска и скрапинга сайтов. Установлен глобально (`firecrawl-cli@1.11.2`).
+
+### Подготовка
+
+```bash
+# Вход (один раз)
+npx firecrawl-cli login
+```
+
 ### Использование
 
 ```bash
 # Поиск мастерских в городе
-npx -y firecrawl-cli@latest search "гранитная мастерская Москва" --limit 10
+npx firecrawl-cli search "гранитная мастерская Москва" --limit 20
 
-# Детальный сбор
-npx -y firecrawl-cli@latest scrape "https://igranit.ru/" --format markdown
+# Детальный сбор конкретного сайта
+npx firecrawl-cli scrape "https://igranit.ru/" --format markdown
 
-# Скрипт
-python scripts/firecrawl_granite.py Москва
+# Автоматизированный скрипт
+uv run python scripts/firecrawl_granite.py Москва
 ```
 
 ### Целевая аудитория
@@ -176,11 +162,63 @@ python scripts/firecrawl_granite.py Москва
 - Делают ретушь
 ```
 
+### data.md (только с Telegram)
+
+```markdown
+# Компании с Telegram — Астрахань
+
+**Всего с Telegram:** 10 компаний
+
+---
+
+## 1. Название
+
+**Telegram:** https://t.me/username
+**WhatsApp:** https://wa.me/79xxxxxxxxx
+...
+```
+
+## Основные скрипты
+
+### Сбор через Firecrawl (Рекомендовано)
+Самый эффективный способ поиска именно гранитных мастерских.
+```bash
+uv run python scripts/firecrawl_granite.py "Новосибирск"
+```
+
+### Поиск мессенджеров
+Обогащает существующий CSV ссылками на соцсети и чаты.
+```bash
+uv run python messenger_search.py
+```
+
+### Анализ сетевых компаний
+Находит компании, представленные в нескольких городах.
+```bash
+uv run python analyze_networks_v3.py
+```
+
+### scrape_city.py (Playwright-скрапинг)
+
+```bash
+cd scripts/
+uv run python scrape_city.py astrakhan
+```
+
 ## Требования
+
 Проект использует `uv` для управления зависимостями.
 - Python 3.10+
-- Beautifulsoup4, Requests, Playwright
-- `firecrawl-cli` (npx)
+- Установленные пакеты: `requests`, `beautifulsoup4`, `lxml`, `playwright`
+- `firecrawl-cli` — установлен глобально через npm (`v1.11.2`)
+
+```bash
+# Установка зависимостей
+uv pip install -r requirements.txt
+
+# Установка браузеров для Playwright (один раз)
+uv run playwright install chromium
+```
 
 ## Процесс работы
 
