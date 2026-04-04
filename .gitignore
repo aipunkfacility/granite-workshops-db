@@ -56,9 +56,3 @@ cities/
 reports/
 .opencode/
 docs/
-
-# CRM docs (allowed)
-!crm/docs/
-
-# Email config (contains credentials)
-crm/config.json
