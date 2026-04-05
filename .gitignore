@@ -51,7 +51,11 @@ Thumbs.db
 *.csv.bak
 rostov_enriched_2.csv
 
-# Data directories
+# Data directories (данные не в git)
+data/
+*.db
+
+# IDE / tools
 cities/
 reports/
 .opencode/
