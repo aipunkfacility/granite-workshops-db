@@ -38,6 +38,7 @@ class CompanyRow(Base):
     website = Column(String, nullable=True)
     emails = Column(JSON, default=list)
     city = Column(String, nullable=False, index=True)
+    messengers = Column(JSON, default=dict)  # {"telegram": "...", "vk": "...", ...}
     status = Column(String, default="raw", index=True)
     segment = Column(String, default="Не определено")
     needs_review = Column(Boolean, default=False)

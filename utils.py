@@ -12,6 +12,20 @@ from loguru import logger
 ua = UserAgent()
 
 
+# Словарь транслитерации: сначала многосимвольные, потом односимвольные
+# Порядок важен — щ, ш, ч, ж, ю, я обрабатываются до остальных
+TRANSLIT_MAP = [
+    ('щ', 'shch'), ('ш', 'sh'), ('ч', 'ch'), ('ж', 'zh'),
+    ('ю', 'yu'), ('я', 'ya'), ('ё', 'yo'), ('э', 'e'),
+    ('х', 'kh'), ('ц', 'ts'),
+    ('а', 'a'), ('б', 'b'), ('в', 'v'), ('г', 'g'), ('д', 'd'),
+    ('е', 'e'), ('з', 'z'), ('и', 'i'), ('й', 'y'), ('к', 'k'),
+    ('л', 'l'), ('м', 'm'), ('н', 'n'), ('о', 'o'), ('п', 'p'),
+    ('р', 'r'), ('с', 's'), ('т', 't'), ('у', 'u'), ('ф', 'f'),
+    ('ъ', ''), ('ы', 'y'), ('ь', ''),
+]
+
+
 def slugify(text: str) -> str:
     """Транслитерация кириллицы в латиницу для URL (slug).
     Пример: "Волгоград" -> "volgograd", "Санкт-Петербург" -> "sankt-peterburg"
@@ -19,21 +33,17 @@ def slugify(text: str) -> str:
     if not text:
         return ""
     
-    cyr = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
-    lat = 'abvgdeezzijklmnoprstufhccssyyeyua'
-    trans = str.maketrans(cyr, lat)
+    text = text.lower().strip()
+    for cyr, lat in TRANSLIT_MAP:
+        text = text.replace(cyr, lat)
     
-    # Доп замены для сложных случаев
-    text = text.lower().replace('ё', 'e').replace('ж', 'zh').replace('х', 'h')\
-               .replace('ц', 'c').replace('ч', 'ch').replace('ш', 'sh').replace('щ', 'sh')\
-               .replace('ю', 'yu').replace('я', 'ya')
-               
-    text = text.translate(trans)
     # Очистка от спецсимволов, замена пробелов на дефис
     text = re.sub(r'[^a-z0-9\s-]', '', text)
     text = re.sub(r'[\s]+', '-', text).strip('-')
     
     return text
+
+
 def adaptive_delay(min_sec: float = 1.0, max_sec: float = 3.5) -> float:
     """Случайная задержка между запросами. Имитирует поведение человека.
 

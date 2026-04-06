@@ -281,8 +281,6 @@ sources:
   firecrawl:
     enabled: true
     max_retries: 3
-    limit_per_query: 10
-    detail_scrape_limit: 10
     queries:
       - "гранитная мастерская памятники"
       - "производство памятников гранит"
@@ -295,27 +293,29 @@ sources:
     max_retries: 3
     method: "jsonld"
     categories:
-      - "izgotovlenie-pamyatnikov"
-      - "pamyatniki-i-nadgrobiya"
+      - "izgotovlenie-i-ustanovka-pamyatnikov-i-nadgrobij"
     subdomain_map:
       астрахань: "astrahan"
       москва: "moskva1"
       санкт-петербург: "sankt-peterburg1"
 
   dgis:
-    enabled: true
+    enabled: false
     max_retries: 3
     search_category: "изготовление памятников"
 
   yell:
-    enabled: true
+    enabled: false
     max_retries: 3
     base_path: "/catalog/izgotovlenie_pamyatnikov/"
 
   firmsru:
-    enabled: true
+    enabled: false
     max_retries: 3
     base_path: "/{city}/izgotovlenie-pamyatnikov/"
+
+  jsprav_playwright:
+    enabled: false
 
   google_maps:
     enabled: false
@@ -352,7 +352,6 @@ enrichment:
 
   tg_finder:
     check_delay: 1.5
-    max_username_variants: 6
     google_search_enabled: true
     website_check_enabled: true
 
@@ -402,16 +401,21 @@ enrichment:
 
 # ===== Priority Score =====
 scoring:
-  telegram: 20
-  whatsapp: 15
-  has_production: 10
-  has_cnc: 15
-  has_portrait_service: 5
-  is_site_constructor: -3
-  no_production: -10
-  map_rating_above_4: 5
-  reviews_above_10: 5
-  empty_tg_profile: -5
+  weights:
+    has_website: 5
+    cms_bitrix: 10
+    cms_modern: 3
+    has_marquiz: 8
+    has_telegram: 15
+    has_whatsapp: 10
+    tg_trust_multiplier: 2
+    multiple_phones: 5
+    has_email: 5
+    is_network: 5
+  levels:
+    segment_A: 50
+    segment_B: 30
+    segment_C: 15
 
 # ===== Экспорт: Smart Filters / Presets =====
 export_presets:

@@ -49,9 +49,14 @@ if PLAYWRIGHT_AVAILABLE:
             from playwright_stealth import stealth_sync
             _has_stealth = True
         except ImportError:
-            logger.warning("playwright-stealth не установлен, продолжаем без него "
-                           "(pip install playwright-stealth)")
-            _has_stealth = False
+            try:
+                from playwright_stealth import stealth
+                stealth_sync = stealth
+                _has_stealth = True
+            except ImportError:
+                logger.warning("playwright-stealth не установлен, продолжаем без него "
+                               "(pip install playwright-stealth)")
+                _has_stealth = False
 
         pw = sync_playwright().start()
         browser = pw.chromium.launch(
@@ -64,7 +69,11 @@ if PLAYWRIGHT_AVAILABLE:
         )
         page = context.new_page()
         if _has_stealth:
-            stealth_sync(page)
+            try:
+                stealth_sync(page)
+            except TypeError:
+                # Если stealth_sync это модуль, а не функция — пропускаем
+                logger.warning("playwright_stealth: не удалось применить stealth, продолжаем без него")
         try:
             yield browser, page
         finally:
