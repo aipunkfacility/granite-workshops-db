@@ -43,8 +43,9 @@ def merge_cluster(cluster_records: list[dict]) -> dict:
         "phones": all_phones,
         "address": pick_best_value(*(r.get("address_raw", "") for r in cluster_records)),
         "website": pick_best_value(*(r.get("website", "") or "" for r in cluster_records)),
-        "emails": list(set(
+        "emails": list(dict.fromkeys(
             e for r in cluster_records for e in r.get("emails", [])
+            if e  # skip None/empty
         )),
         "messengers": merged_messengers,
         "city": cluster_records[0].get("city", ""),

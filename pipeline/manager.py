@@ -1,4 +1,5 @@
 # pipeline/manager.py
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from database import Database, RawCompanyRow, CompanyRow, EnrichedCompanyRow
 from pipeline.checkpoint import CheckpointManager
 from pipeline.status import print_status
@@ -27,6 +28,7 @@ from enrichers.tg_trust import check_tg_trust
 from enrichers.classifier import Classifier
 from enrichers.network_detector import NetworkDetector
 from exporters.csv import CsvExporter
+from exporters.markdown import MarkdownExporter
 from regions import get_region_cities
 from category_finder import discover_categories, get_categories, get_subdomain
 
@@ -118,6 +120,41 @@ class PipelineManager:
         """Проверить включён ли источник в config.yaml."""
         return self.config.get("sources", {}).get(source, {}).get("enabled", True)
 
+    def _scrape_single_city(self, rc: str, city: str, cat_cache: dict) -> list:
+        """Скрапинг одного города (для ThreadPoolExecutor)."""
+        print_status(f"  Парсинг: {rc}", "info")
+        city_results = []
+        
+        jsprav_cats = get_categories(cat_cache, "jsprav", rc)
+        jsprav_sub = get_subdomain(cat_cache, "jsprav", rc, self.config)
+        yell_cats = get_categories(cat_cache, "yell", rc)
+        firmsru_cats = get_categories(cat_cache, "firmsru", rc)
+        
+        # 1. Быстрые скреперы (без Playwright)
+        if self._is_enabled("jsprav"):
+            jsprav = JspravScraper(self.config, rc, categories=jsprav_cats, subdomain=jsprav_sub)
+            city_results.extend(jsprav.run())
+        
+        if self._is_enabled("firecrawl"):
+            firecrawl = FirecrawlScraper(self.config, rc, self.db)
+            city_results.extend(firecrawl.run())
+
+        # 2. Playwright скреперы (NOT parallelizable — shared browser session)
+        if self._is_enabled("dgis") or self._is_enabled("yell") or self._is_enabled("firmsru") or self._is_enabled("jsprav_playwright"):
+            with playwright_session(headless=True) as (browser, page):
+                if page:
+                    if self._is_enabled("dgis"):
+                        dgis = DgisScraper(self.config, rc, page)
+                        city_results.extend(dgis.run())
+                    if self._is_enabled("yell"):
+                        yell = YellScraper(self.config, rc, page, categories=yell_cats)
+                        city_results.extend(yell.run())
+                    if self._is_enabled("firmsru"):
+                        firmsru = FirmsruScraper(self.config, rc, page, categories=firmsru_cats)
+                        city_results.extend(firmsru.run())
+        
+        return city_results
+
     def _run_phase_scrape(self, city: str, region_cities: list[str] = None):
         """ФАЗА 0+1: Поиск категорий и сбор данных."""
         if not region_cities:
@@ -135,45 +172,38 @@ class PipelineManager:
             cat_cache = {}
         
         # ФАЗА 1: Сбор данных
-        print_status("ФАЗА 1: Сбор данных (Scraping)", "info")
+        max_threads = self.config.get("scraping", {}).get("max_threads", 1)
+        print_status(f"ФАЗА 1: Сбор данных (Scraping, threads={max_threads})", "info")
         
         raw_results = []
         
-        for rc in region_cities:
-            print_status(f"  Парсинг: {rc}", "info")
-            before = len(raw_results)
-            
-            # Категории и поддомен из кэша
-            jsprav_cats = get_categories(cat_cache, "jsprav", rc)
-            jsprav_sub = get_subdomain(cat_cache, "jsprav", rc, self.config)
-            yell_cats = get_categories(cat_cache, "yell", rc)
-            firmsru_cats = get_categories(cat_cache, "firmsru", rc)
-            
-            # 1. Быстрые скреперы (без Playwright)
-            if self._is_enabled("jsprav"):
-                jsprav = JspravScraper(self.config, rc, categories=jsprav_cats, subdomain=jsprav_sub)
-                raw_results.extend(jsprav.run())
-            
-            if self._is_enabled("firecrawl"):
-                firecrawl = FirecrawlScraper(self.config, rc, self.db)
-                raw_results.extend(firecrawl.run())
-
-            # 2. Playwright скреперы
-            if self._is_enabled("dgis") or self._is_enabled("yell") or self._is_enabled("firmsru") or self._is_enabled("jsprav_playwright"):
-                with playwright_session(headless=True) as (browser, page):
-                    if page:
-                        if self._is_enabled("dgis"):
-                            dgis = DgisScraper(self.config, rc, page)
-                            raw_results.extend(dgis.run())
-                        if self._is_enabled("yell"):
-                            yell = YellScraper(self.config, rc, page, categories=yell_cats)
-                            raw_results.extend(yell.run())
-                        if self._is_enabled("firmsru"):
-                            firmsru = FirmsruScraper(self.config, rc, page, categories=firmsru_cats)
-                            raw_results.extend(firmsru.run())
-            
-            city_count = len(raw_results) - before
-            print_status(f"  {rc}: +{city_count} записей", "success")
+        if max_threads > 1 and len(region_cities) > 1:
+            # Параллельный парсинг городов (только быстрые скреперы без Playwright)
+            print_status(f"Параллельный парсинг {len(region_cities)} городов на {max_threads} потоках", "info")
+            with ThreadPoolExecutor(max_workers=max_threads) as executor:
+                future_to_city = {
+                    executor.submit(self._scrape_single_city, rc, city, cat_cache): rc
+                    for rc in region_cities
+                }
+                for future in as_completed(future_to_city):
+                    rc = future_to_city[future]
+                    try:
+                        city_results = future.result()
+                        raw_results.extend(city_results)
+                        print_status(f"  {rc}: +{len(city_results)} записей", "success")
+                    except Exception as e:
+                        logger.error(f"  {rc}: ошибка парсинга — {e}")
+                        print_status(f"  {rc}: ошибка — {e}", "warning")
+        else:
+            # Последовательный парсинг
+            for rc in region_cities:
+                try:
+                    city_results = self._scrape_single_city(rc, city, cat_cache)
+                    raw_results.extend(city_results)
+                    print_status(f"  {rc}: +{len(city_results)} записей", "success")
+                except Exception as e:
+                    logger.error(f"  {rc}: ошибка парсинга — {e}")
+                    print_status(f"  {rc}: ошибка — {e}", "warning")
 
         # Все результаты сохраняем под одним city — вся область вместе
         for r in raw_results:
@@ -379,7 +409,7 @@ class PipelineManager:
                 erow.messengers = messengers
                 erow.tg_trust = tg_trust
                 
-                session.add(erow)
+                session.merge(erow)
                 count += 1
                 # Показываем что именно делаем для каждой компании
                 parts = []
@@ -787,7 +817,7 @@ class PipelineManager:
             session.close()
 
     def _auto_export(self, city: str):
-        """ФАЗА 6: Автоматический экспорт в CSV."""
+        """ФАЗА 6: Автоматический экспорт в CSV + пресеты."""
         print_status("ФАЗА 6: Экспорт CSV", "info")
         try:
             exporter = CsvExporter(self.db)
@@ -796,3 +826,21 @@ class PipelineManager:
         except Exception as e:
             logger.error(f"Ошибка экспорта для {city}: {e}")
             print_status(f"Экспорт не удался: {e}", "warning")
+
+        # Экспорт пресетов из config.yaml
+        export_presets = self.config.get("export_presets", {})
+        if export_presets:
+            print_status(f"Экспорт пресетов: {len(export_presets)} шт.", "info")
+            for preset_name, preset in export_presets.items():
+                try:
+                    preset_format = preset.get("format", "csv")
+                    if preset_format == "markdown" or preset_format == "md":
+                        md_exporter = MarkdownExporter(self.db)
+                        md_exporter.export_city_with_preset(city, preset_name, preset)
+                    else:
+                        csv_exporter = CsvExporter(self.db)
+                        csv_exporter.export_city_with_preset(city, preset_name, preset)
+                    print_status(f"  Пресет '{preset_name}': OK", "success")
+                except Exception as e:
+                    logger.error(f"Ошибка экспорта пресета '{preset_name}' для {city}: {e}")
+                    print_status(f"  Пресет '{preset_name}': ошибка — {e}", "warning")

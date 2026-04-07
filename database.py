@@ -2,7 +2,7 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, \
     DateTime, Text, JSON, ForeignKey, event
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 import yaml
 
@@ -22,7 +22,7 @@ class RawCompanyRow(Base):
     emails = Column(JSON, default=list)      # list[str]
     geo = Column(String, nullable=True)      # "lat,lon"
     messengers = Column(JSON, default=dict)  # {"telegram": "...", "vk": "...", ...}
-    scraped_at = Column(DateTime, default=datetime.now)
+    scraped_at = Column(DateTime, default=lambda: datetime.now(tz=timezone.utc))
     city = Column(String, nullable=False, index=True)
     merged_into = Column(Integer, ForeignKey("companies.id"), nullable=True)
 
@@ -43,14 +43,14 @@ class CompanyRow(Base):
     segment = Column(String, default="Не определено")
     needs_review = Column(Boolean, default=False)
     review_reason = Column(String, default="")
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now)
+    created_at = Column(DateTime, default=lambda: datetime.now(tz=timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(tz=timezone.utc))
 
 
 class EnrichedCompanyRow(Base):
     __tablename__ = "enriched_companies"
 
-    id = Column(Integer, primary_key=True)  # Принудительно задаем тот же ID, что и в CompanyRow
+    id = Column(Integer, ForeignKey("companies.id", ondelete="CASCADE"), primary_key=True)
     name = Column(String, nullable=False)
     phones = Column(JSON, default=list)
     address_raw = Column(Text, default="")
@@ -69,7 +69,7 @@ class EnrichedCompanyRow(Base):
     crm_score = Column(Integer, default=0, index=True)
     segment = Column(String, default="D", index=True)
     
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    updated_at = Column(DateTime, default=lambda: datetime.now(tz=timezone.utc), onupdate=lambda: datetime.now(tz=timezone.utc))
 
     def to_dict(self):
         return {
@@ -97,7 +97,7 @@ class PipelineRunRow(Base):
     city = Column(String, nullable=False, index=True)
     stage = Column(String, nullable=False)
     source = Column(String, nullable=True)
-    started_at = Column(DateTime, default=datetime.now)
+    started_at = Column(DateTime, default=lambda: datetime.now(tz=timezone.utc))
     finished_at = Column(DateTime, nullable=True)
     records_found = Column(Integer, default=0)
     records_errors = Column(Integer, default=0)
@@ -107,14 +107,55 @@ class PipelineRunRow(Base):
 
 # ===== Синглтон для доступа к БД =====
 
+def run_alembic_upgrade(db_path: str, config_path: str = "config.yaml"):
+    """
+    Запустить Alembic upgrade head для применения миграций.
+    Вызывается при инициализации Database, чтобы схема всегда была актуальной.
+    """
+    try:
+        from alembic.config import Config
+        from alembic.script import ScriptDirectory
+        from alembic.runtime.migration import MigrationContext
+
+        alembic_cfg = Config()
+        alembic_cfg.set_main_option("script_location", "alembic")
+        alembic_cfg.set_main_option("sqlalchemy.url", f"sqlite:///{db_path}")
+
+        # Устанавливаем GRANITE_CONFIG для env.py
+        import os
+        old_granite_config = os.environ.get("GRANITE_CONFIG")
+        os.environ["GRANITE_CONFIG"] = config_path
+
+        from alembic import command
+        command.upgrade(alembic_cfg, "head")
+
+        # Восстанавливаем старое значение
+        if old_granite_config is None:
+            os.environ.pop("GRANITE_CONFIG", None)
+        else:
+            os.environ["GRANITE_CONFIG"] = old_granite_config
+
+    except Exception as e:
+        # Если Alembic не настроен или миграций нет — фоллбэк на create_all
+        import warnings
+        warnings.warn(
+            f"Alembic upgrade не удалось ({e}), используется create_all(). "
+            "Для корректной эволюции схемы настройте Alembic: alembic init alembic",
+            stacklevel=2
+        )
+        raise
+
+
 class Database:
-    def __init__(self, db_path: str = None, config_path: str = "config.yaml"):
+    def __init__(self, db_path: str = None, config_path: str = "config.yaml", auto_migrate: bool = True):
         if not db_path:
             with open(config_path, "r", encoding="utf-8") as f:
                 config = yaml.safe_load(f)
             db_path = config.get("database", {}).get("path", "data/granite.db")
         
-        os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        self._db_path = db_path
+        self._config_path = config_path
+        os.makedirs(os.path.dirname(db_path) if os.path.dirname(db_path) else ".", exist_ok=True)
 
         # WAL-режим: параллельные записи из ThreadPoolExecutor без "database is locked"
         self.engine = create_engine(
@@ -123,15 +164,26 @@ class Database:
             connect_args={"check_same_thread": False},
         )
 
-        # Включаем WAL и busy_timeout на уровне подключения
+        # Включаем WAL, foreign_keys и busy_timeout на уровне подключения
         @event.listens_for(self.engine, "connect")
         def set_sqlite_pragma(dbapi_conn, connection_record):
             cursor = dbapi_conn.cursor()
             cursor.execute("PRAGMA journal_mode=WAL")
+            cursor.execute("PRAGMA foreign_keys=ON")
             cursor.execute("PRAGMA busy_timeout=5000")  # 5 сек ожидания блокировки
             cursor.close()
 
-        Base.metadata.create_all(self.engine)
+        # Применяем миграции через Alembic (если доступен)
+        if auto_migrate:
+            try:
+                run_alembic_upgrade(db_path, config_path)
+            except Exception:
+                # Фоллбэк: создать таблицы напрямую из ORM-моделей
+                Base.metadata.create_all(self.engine)
+        else:
+            # Без авто-миграций — просто создаём таблицы из ORM
+            Base.metadata.create_all(self.engine)
+
         self.SessionLocal = sessionmaker(bind=self.engine)
 
     def get_session(self) -> Session:

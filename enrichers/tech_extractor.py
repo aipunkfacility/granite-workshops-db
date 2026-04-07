@@ -44,6 +44,6 @@ class TechExtractor:
                 result["has_marquiz"] = True
                 
         except Exception as e:
-            logger.debug(f"Tech extractor error {url}: {e}")
+            logger.warning(f"Tech extractor error {url}: {e}")
             
         return result

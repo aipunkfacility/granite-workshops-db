@@ -1,6 +1,6 @@
 # models.py
 from pydantic import BaseModel, Field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 
@@ -41,7 +41,7 @@ class RawCompany(BaseModel):
     emails: list[str] = Field(default_factory=list)
     geo: tuple[float, float] | None = None  # (lat, lon)
     messengers: dict[str, str] = Field(default_factory=dict)  # {"telegram": "...", "vk": "...", "whatsapp": "..."}
-    scraped_at: datetime = Field(default_factory=datetime.now)
+    scraped_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
     city: str = ""
 
 
@@ -59,8 +59,8 @@ class Company(BaseModel):
     segment: CompanySegment = CompanySegment.UNKNOWN
     needs_review: bool = False  # флаг для conflicts.md
     review_reason: str = ""     # причина пометки (например, "same_name_diff_address")
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
 
 
 class EnrichedCompany(BaseModel):
@@ -91,7 +91,7 @@ class PipelineRun(BaseModel):
     city: str
     stage: str              # "ingest" | "dedup" | "enrich" | "full"
     source: str | None = None  # конкретный источник (если применимо)
-    started_at: datetime = Field(default_factory=datetime.now)
+    started_at: datetime = Field(default_factory=lambda: datetime.now(tz=timezone.utc))
     finished_at: datetime | None = None
     records_found: int = 0
     records_errors: int = 0

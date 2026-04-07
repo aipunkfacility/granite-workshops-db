@@ -26,8 +26,8 @@ class MessengerScanner:
             html = fetch_page(base_url_clean + "/", timeout=10)
             if html:
                 self._extract_social_links(html, found_messengers)
-        except Exception:
-            pass
+        except (requests.RequestException, Exception) as e:
+            logger.debug(f"MessengerScanner scan_website main page error: {e}")
 
         # Если уже нашли telegram — скорее всего этого достаточно
         if "telegram" in found_messengers:
@@ -51,7 +51,8 @@ class MessengerScanner:
                             ehtml = fetch_page(link, timeout=10)
                             if ehtml:
                                 self._extract_social_links(ehtml, found_messengers)
-                        except Exception:
+                        except Exception as e:
+                            logger.debug(f"MessengerScanner extra page error: {e}")
                             continue
         except Exception:
             pass

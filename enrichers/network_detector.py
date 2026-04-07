@@ -2,23 +2,7 @@
 import re
 from database import Database, EnrichedCompanyRow
 from loguru import logger
-from utils import extract_domain
-
-
-def _normalize_phone(phone: str) -> str | None:
-    """Нормализация телефона: оставляем только цифры, добавляем +7."""
-    if not phone:
-        return None
-    digits = re.sub(r"\D", "", phone)
-    if len(digits) < 10:
-        return None
-    # Если начинается с 8 → заменяем на 7
-    if digits[0] == "8":
-        digits = "7" + digits[1:]
-    # Если 10 цифр (без кода страны) → добавляем 7
-    elif len(digits) == 10:
-        digits = "7" + digits
-    return digits if len(digits) == 11 else None
+from utils import extract_domain, normalize_phone as _normalize_phone
 
 
 class NetworkDetector:

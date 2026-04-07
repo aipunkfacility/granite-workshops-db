@@ -49,7 +49,7 @@ class JspravScraper(BaseScraper):
             return True
         if self._city_lower.startswith(loc_lower) or loc_lower.startswith(self._city_lower):
             return True
-        for variant in (loc_lower, self._city_lower):
+        for variant in (loc_lower,):
             if len(variant) > 4:
                 stem = variant.rstrip("аеоуияью")
                 if stem and stem == self._city_lower.rstrip("аеоуияью"):
